@@ -137,11 +137,11 @@ app.put('/update-prisoner-status', (req, res) => {
 });
 
 app.post('/book-visit', (req, res) => {
-    const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations } = req.body;
+    const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day } = req.body;
 
-    const sql = "INSERT INTO visits (prisoner_id, visitor_name, visit_date, visit_time, prisonerName, phone, relations) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const sql = "INSERT INTO visits (prisoner_id, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-    db.query(sql, [prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations], (err, result) => {
+    db.query(sql, [prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day], (err, result) => {
         if (err) {
             console.log(err);
             res.status(500).send({ message: "จองไม่สำเร็จ" });
