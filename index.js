@@ -73,7 +73,7 @@ app.get('/prisoner', (req, res) => {
 app.post('/login', (req, res) => {
     const { name, birthday } = req.body;
     db.query(
-        "SELECT * FROM user WHERE name = ? AND birthday = ?",
+        "SELECT * FROM user WHERE id_card_number = ? AND birthday = ?",
         [name, birthday],
         (err, result) => {
             if (err) {
@@ -163,38 +163,23 @@ app.post('/book-visit', (req, res) => {
 });
 
 app.post("/register-user", (req, res) => {
-    const { name, idCard, phone, email } = req.body;
-
-    if (!name || !idCard || !phone || !email) {
-        return res.status(400).json({
-            status: "error",
-            message: "กรุณากรอกข้อมูลให้ครบทุกช่อง",
-        });
-    }
-
+    const { name, idCard, birthday  } = req.body;
+    
     const sql = `
-    INSERT INTO user (name, id_card_number, phone, email)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO user (name, id_card_number, birthday )
+    VALUES (?, ?, ?)
   `;
-
-    db.query(sql, [name, idCard, phone, email], (err) => {
+    db.query(sql, [name, idCard, birthday ], (err) => {
         if (err) {
             console.error("SQL Error:", err);
-            if (err.code === "ER_DUP_ENTRY") {
-                return res.status(409).json({
-                    status: "error",
-                    message: "เลขบัตรหรืออีเมลนี้ถูกใช้แล้ว",
-                });
-            }
-            return res.status(500).json({
-                status: "error",
-                message: "เกิดข้อผิดพลาดจากเซิร์ฟเวอร์",
-            });
+            res.status(500).send({ 
+                message: "ลงทะเบียนไม่สำเร็จ", 
+                error: err.message,  
+                sqlCode: err.code   });
         }
-        res.json({
-            status: "success",
-            message: "สมัครสมาชิกสำเร็จ (User)",
-        });
+        else {
+            res.send({ message: "ลงทะเบียนสำเร็จ" });
+        }
     });
 });
 
