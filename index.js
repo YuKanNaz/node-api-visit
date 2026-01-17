@@ -47,6 +47,16 @@ app.get('/user', (req, res) => {
     });
 });
 
+app.get('/printdata', (req, res) => {
+    db.query("SELECT * FROM visits", (err, result) => {
+        if (err) {
+            res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
+        } else {
+            res.send(result);
+        }
+    });
+});
+
 app.get('/notice', (req, res) => {
     db.query("SELECT * FROM announce", (err, result) => {
         if (err) {
