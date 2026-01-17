@@ -171,7 +171,7 @@ app.put('/update-visit-status', (req, res) => {
     if (!visit_id) {
         return res.status(400).send({ message: "ไม่พบ visit_id ที่ส่งมา" });
     }
-    const sql = "UPDATE user SET booking_status = ? WHERE id = ?";
+    const sql = "UPDATE user SET booking_status = ? WHERE name = ?";
     db.query(sql, [status, visit_id], (err, result) => {
         if (err) {
             return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Database" });
