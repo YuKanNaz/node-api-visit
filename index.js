@@ -100,9 +100,9 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/putprisoner', (req, res) => {
-    const { prisoner_code, name, age, cell_number, sentence_detail, added_by } = req.body;
-    const sql = "INSERT INTO prisoner (prisoner_code, name, age, cell_number, sentence_detail, added_by) VALUES (?, ?, ?, ?, ?, ?)";
-    db.query(sql, [prisoner_code, name, age, cell_number, sentence_detail, added_by], (err) => {
+    const { prisoner_code, name, age, cell_number, sentence_detail, added_by, birthdayP, id_card_numberP } = req.body;
+    const sql = "INSERT INTO prisoner (prisoner_code, name, age, cell_number, sentence_detail, added_by, birthday, id_card_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    db.query(sql, [prisoner_code, name, age, cell_number, sentence_detail, added_by, birthdayP, id_card_numberP ], (err) => {
         if (err) {
             res.status(500).send({ message: "เพิ่มนักโทษไม่สำเร็จ" })
         }
