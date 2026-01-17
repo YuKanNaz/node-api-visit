@@ -11,17 +11,16 @@ app.use(cors());
 // ---------------------------------------------------------
 const db = mysql.createPool({
     connectionLimit: 10,
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 4000, // TiDB ใช้พอร์ต 4000
+    // แก้ชื่อตัวแปรให้ตรงกับใน Vercel (TIDB_...)
+    host: process.env.TIDB_HOST,      
+    user: process.env.TIDB_USER,      
+    password: process.env.TIDB_PASSWORD, 
+    database: process.env.TIDB_DATABASE, // ใน Vercel คุณตั้งชื่อว่า TIDB_DATABASE
+    port: process.env.TIDB_PORT || 4000, 
     ssl: {
         minVersion: 'TLSv1.2',
-        rejectUnauthorized: true // TiDB บังคับใช้ SSL
+        rejectUnauthorized: true
     },
-    waitForConnections: true,
-    queueLimit: 0,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0
 });
