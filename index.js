@@ -166,6 +166,23 @@ app.put('/update-prisoner-status', (req, res) => {
     });
 });
 
+app.put('/update-visit-status', (req, res) => {
+    const { visit_id, status } = req.body;
+    if (!visit_id) {
+        return res.status(400).send({ message: "ไม่พบ visit_id ที่ส่งมา" });
+    }
+    const sql = "UPDATE user SET booking_status = ? WHERE id = ?";
+    db.query(sql, [status, visit_id], (err, result) => {
+        if (err) {
+            return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Database" });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).send({ message: "ไม่พบ ID การเยี่ยมคนนี้ในระบบ" });
+        }
+        res.send({ message: "อัปเดตสถานะสำเร็จ!" });
+    });
+});
+
 app.post('/book-visit', (req, res) => {
     const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day } = req.body;
 
