@@ -176,13 +176,13 @@ app.post('/book-visit', (req, res) => {
 });
 
 app.post("/register-user", (req, res) => {
-    const { name, idCard, birthday  } = req.body;
+    const { name, idCard, birthday, phone, email } = req.body;
     
     const sql = `
-    INSERT INTO user (name, id_card_number, birthday )
-    VALUES (?, ?, ?)
+    INSERT INTO user (name, id_card_number, birthday, phone, email)
+    VALUES (?, ?, ?, ?, ?)
   `;
-    db.query(sql, [name, idCard, birthday ], (err) => {
+    db.query(sql, [name, idCard, birthday, phone, email ], (err) => {
         if (err) {
             console.error("SQL Error:", err);
             res.status(500).send({ 
