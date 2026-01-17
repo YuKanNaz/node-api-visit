@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const mysql = require('mysql2');
+const mysql = require('mysql');
 const cors = require('cors');
 
 app.use(express.json());
@@ -15,10 +15,7 @@ const db = mysql.createPool({
     password: process.env.DB_PASSWORD || "Shiro11500", // อ่านค่าจาก Vercel หรือใช้รหัสเดิม
     database: process.env.DB_NAME || "gameing_shop",   // อ่านค่าจาก Vercel หรือใช้ชื่อเดิม
     port: process.env.DB_PORT || 3306,    
-    ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
-  }          // อ่านค่าจาก Vercel หรือใช้ 3306
+
 });
 
 // เพิ่มตัวเช็คว่าเชื่อมต่อได้ไหม (เอาไว้ดูใน Log)
