@@ -1,14 +1,13 @@
 const express = require('express');
 const app = express();
-const mysql = require('mysql2'); // แนะนำให้ใช้ mysql2 เพื่อความเร็วและรองรับ Promise
+const mysql = require('mysql2');
 const cors = require('cors');
 
 app.use(express.json());
 app.use(cors());
 
-// ---------------------------------------------------------
-// 1. การเชื่อมต่อ Database (รองรับ TiDB บน Cloud และ Local)
-// ---------------------------------------------------------
+// 1. แก้ไขการเชื่อมต่อ Database ให้รองรับทั้ง Cloud (Aiven) และ Localhost
+// เปลี่ยนจาก createConnection เป็น createPool เพื่อความเสถียรบน Cloud
 const db = mysql.createPool({
     connectionLimit: 10,
     // แก้ชื่อตัวแปรให้ตรงกับใน Vercel (TIDB_...)
@@ -25,45 +24,43 @@ const db = mysql.createPool({
     keepAliveInitialDelay: 0
 });
 
-// เช็คการเชื่อมต่อ (Log ดูใน Vercel Function Logs)
+// เพิ่มตัวเช็คว่าเชื่อมต่อได้ไหม (เอาไว้ดูใน Log)
 db.getConnection((err, connection) => {
     if (err) {
-        console.error('❌ Database Connection Failed:', err.code);
-        console.error(err);
+        console.error('Error connecting to database:', err.code);
+        console.error('Error info:', err);
     } else {
-        console.log('✅ Database connected successfully!');
-        connection.release();
+        console.log('Database connected successfully!');
+        connection.release(); // คืน Connection กลับเข้า Pool
     }
 });
 
-// ---------------------------------------------------------
-// 2. Routes (API endpoints)
-// ---------------------------------------------------------
-
-app.get('/', (req, res) => {
-    res.send("API Visit Prison System is Running...");
-});
 
 app.get('/user', (req, res) => {
     db.query("SELECT * FROM user", (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.send(result);
+        if (err) {
+            console.log(err);
+            res.status(500).send(err);
+        } else {
+            res.send(result);
+        }
     });
 });
 
 app.get('/notice', (req, res) => {
     db.query("SELECT * FROM announce", (err, result) => {
-        if (err) return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
-        res.send(result);
+        if (err) {
+            res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
+        } else {
+            res.send(result);
+        }
     });
 });
 
 app.get('/prisoner', (req, res) => {
     const name = req.query.name;
-    // [FIX] แก้ไข Syntax ตรงนี้ เดิมเขียนผิด
-    const searchTerm = `%${name}%`; 
-    
-    db.query("SELECT * FROM prisoner WHERE name LIKE ?", [searchTerm], (err, result) => {
+    // แก้ไข Syntax นิดหน่อยให้ปลอดภัยขึ้น
+    db.query("SELECT * FROM prisoner WHERE name LIKE ?", [`%${name}%`], (err, result) => {
         if (err) {
             console.log("ข้อผิดพลาด", err);
             res.status(500).json(err);
@@ -73,7 +70,6 @@ app.get('/prisoner', (req, res) => {
     });
 });
 
-// Login User: ใช้ name และ birthday
 app.post('/login', (req, res) => {
     const { name, birthday } = req.body;
     db.query(
@@ -93,34 +89,38 @@ app.post('/login', (req, res) => {
     );
 });
 
-// Login Officer
 app.post('/login-officer', (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT * FROM officer WHERE username = ? AND password = ?";
     db.query(sql, [username, password], (err, result) => {
-        if (err) return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ server" });
-        
-        if (result.length > 0) {
-            res.send({ message: "Login สำเร็จ!", user: result[0] });
-        } else {
-            res.status(401).send({ message: "ชื่อหรือรหัสไม่ถูกต้อง" });
+        if (err) {
+            res.status(500).send({ message: "เกิดข้อผิดพลาดที่ server" })
+        }
+        else {
+            if (result.length > 0) {
+                res.send({ message: "Login สำเร็จ!", user: result[0] });
+            } else {
+                res.status(401).send({ message: "ชื่อหรือรหัสไม่ถูกต้อง" });
+            }
         }
     })
 })
 
-// Login Admin
 app.post('/login-admin', (req, res) => {
     const { name, password } = req.body;
     db.query(
         "SELECT * FROM admin WHERE username = ? AND password = ? ",
         [name, password],
         (err, result) => {
-            if (err) return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
-            
-            if (result.length > 0) {
-                res.send({ message: "Login สำเร็จ!", user: result[0] });
+            if (err) {
+                res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
             } else {
-                res.status(401).send({ message: "ชื่อหรือรหัสไม่ถูกต้อง" });
+                if (result.length > 0) {
+                    res.send({ message: "Login สำเร็จ!", user: result[0] });
+                } else {
+                    res.status(401).send({ message: "ชื่อหรือรหัสไม่ถูกต้อง" });
+                }
+
             }
         }
     )
@@ -133,8 +133,9 @@ app.put('/update-prisoner-status', (req, res) => {
     }
     const sql = "UPDATE prisoner SET status = ? WHERE prisoner_id = ?";
     db.query(sql, [status, prisoner_id], (err, result) => {
-        if (err) return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Database" });
-        
+        if (err) {
+            return res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Database" });
+        }
         if (result.affectedRows === 0) {
             return res.status(404).send({ message: "ไม่พบ ID นักโทษคนนี้ในระบบ" });
         }
@@ -157,25 +158,22 @@ app.post('/book-visit', (req, res) => {
     });
 });
 
-// [FIX] เพิ่ม birthday ลงไปในการสมัครด้วย ไม่งั้น User จะ Login ไม่ได้
 app.post("/register-user", (req, res) => {
-    const { name, idCard, phone, email, birthday } = req.body; // รับ birthday มาด้วย
+    const { name, idCard, phone, email } = req.body;
 
-    // เช็คว่าส่งข้อมูลมาครบไหม
-    if (!name || !idCard || !phone || !email || !birthday) {
+    if (!name || !idCard || !phone || !email) {
         return res.status(400).json({
             status: "error",
-            message: "กรุณากรอกข้อมูลให้ครบทุกช่อง (รวมถึงวันเกิด)",
+            message: "กรุณากรอกข้อมูลให้ครบทุกช่อง",
         });
     }
 
-    // เพิ่ม birthday ลงใน SQL
     const sql = `
-    INSERT INTO user (name, id_card_number, phone, email, birthday)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO user (name, id_card_number, phone, email)
+    VALUES (?, ?, ?, ?)
   `;
 
-    db.query(sql, [name, idCard, phone, email, birthday], (err) => {
+    db.query(sql, [name, idCard, phone, email], (err) => {
         if (err) {
             console.error("SQL Error:", err);
             if (err.code === "ER_DUP_ENTRY") {
@@ -199,8 +197,7 @@ app.post("/register-user", (req, res) => {
 
 app.post("/register-officer", (req, res) => {
     const { nameof, username, password } = req.body;
-    // [FIX] เปลี่ยน VALUE เป็น VALUES ให้ถูกต้องตามหลัก SQL
-    const sql = "INSERT INTO officer (name, username, password) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO officer (name, username, password) VALUE (?, ?, ?)";
     db.query(sql, [nameof, username, password], (err) => {
         if (err) {
             res.status(500).send({ message: "สมัครให้ officer ไม่สำเร็จ" })
@@ -223,14 +220,10 @@ app.put("/puttext-officer", (req, res) => {
     });
 });
 
-// ---------------------------------------------------------
-// 3. Export และ Start Server
-// ---------------------------------------------------------
-
-// สำคัญมากสำหรับ Vercel: ต้อง Export app ออกไป
+// 2. สำคัญมากสำหรับ Vercel: ต้อง Export app ออกไป
 module.exports = app;
 
-// สั่งให้ Listen เฉพาะตอนรันในเครื่อง (เพื่อไม่ให้ Error บน Vercel)
+// 3. สั่งให้ Listen เฉพาะตอนรันในเครื่อง (เพื่อไม่ให้ Error บน Vercel)
 if (require.main === module) {
     app.listen(3001, () => {
         console.log('Server is running on port 3001');
