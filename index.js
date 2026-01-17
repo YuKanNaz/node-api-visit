@@ -89,6 +89,19 @@ app.post('/login', (req, res) => {
     );
 });
 
+app.post('/putprisoner', (req, res) => {
+    const { prisoner_code, name, age, cell_number, sentence_detail, added_by } = req.body;
+    const sql = "INSERT INTO prisoner (prisoner_code, name, age, cell_number, sentence_detail, added_by) VALUES (?, ?, ?, ?, ?, ?)";
+    db.query(sql, [prisoner_code, name, age, cell_number, sentence_detail, added_by], (err) => {
+        if (err) {
+            res.status(500).send({ message: "เพิ่มนักโทษไม่สำเร็จ" })
+        }
+        else {
+            res.send({ message: "เพิ่มนักโทษสำเร็จ" });
+        }
+    });
+});
+
 app.post('/login-officer', (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT * FROM officer WHERE username = ? AND password = ?";
