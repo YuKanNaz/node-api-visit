@@ -151,7 +151,11 @@ app.post('/book-visit', (req, res) => {
     db.query(sql, [prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day], (err, result) => {
         if (err) {
             console.log(err);
-            res.status(500).send({ message: "จองไม่สำเร็จ" });
+            res.status(500).send({ 
+                message: "จองไม่สำเร็จ", 
+                error: err.message,  
+                sqlCode: err.code   });
+            
         } else {
             res.send({ message: "จองเยี่ยมสำเร็จ รอการอนุมัติ!" });
         }
