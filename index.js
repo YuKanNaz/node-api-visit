@@ -185,20 +185,32 @@ app.put('/update-visit-status', (req, res) => {
 
 app.post('/book-visit', (req, res) => {
     const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day } = req.body;
-
-    const sql = "INSERT INTO visits (prisoner_id, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-    db.query(sql, [prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day], (err, result) => {
+    // 1. เพิ่มการตรวจสอบข้อมูลซ้ำในฐานข้อมูล
+    const checkSql = "SELECT * FROM visits WHERE prisoner_id = ? AND visit_date = ? AND visit_time = ?";
+    db.query(checkSql, [prisoner_code, visit_date, visit_time], (err, result) => {
         if (err) {
-            console.log(err);
-            res.status(500).send({ 
-                message: "จองไม่สำเร็จ", 
-                error: err.message,  
-                sqlCode: err.code   });
-            
-        } else {
-            res.send({ message: "จองเยี่ยมสำเร็จ รอการอนุมัติ!" });
+            console.error("Check Error:", err);
+            return res.status(500).send({ message: "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล" });
         }
+        // 2. ถ้าเจอข้อมูลที่ตรงกัน แสดงว่ามีคนจองเวลานี้ไปแล้ว
+        if (result.length > 0) {
+            return res.status(400).send({ message: "เวลานี้ของวันดังกล่าวมีผู้อื่นจองแล้ว กรุณาเลือกวันหรือเวลาใหม่" });
+        }
+        // 3. ถ้าไม่มีข้อมูลซ้ำ ให้ดำเนินการ INSERT ข้อมูลตามปกติ
+        const sql = "INSERT INTO visits (prisoner_id, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        db.query(sql, [prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day], (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send({ 
+                    message: "จองไม่สำเร็จ", 
+                    error: err.message,  
+                    sqlCode: err.code   
+                });
+            } else {
+                res.send({ message: "จองเยี่ยมสำเร็จ รอการอนุมัติ!" });
+            }
+        });
     });
 });
 
