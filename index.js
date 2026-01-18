@@ -37,13 +37,13 @@ db.getConnection((err, connection) => {
 
 
 app.get('/user', (req, res) => {
-    db.query("SELECT * FROM user", (err, result) => {
+    const name = req.query.name;
+    db.query("SELECT * FROM user WHERE name = ?", [name], (err, result) => {
         if (err) {
-            console.log(err);
-            res.status(500).send(err);
-        } else {
-            res.send(result);
+            console.error("Database Error:", err);
+            return res.status(500).send(err);
         }
+        res.send(result);
     });
 });
 
