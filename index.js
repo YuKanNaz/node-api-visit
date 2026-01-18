@@ -186,8 +186,8 @@ app.put('/update-visit-status', (req, res) => {
 app.post('/book-visit', (req, res) => {
     const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day } = req.body;
     // 1. เพิ่มการตรวจสอบข้อมูลซ้ำในฐานข้อมูล
-    const checkSql = "SELECT * FROM visits WHERE prisoner_id = ? AND visit_date = ? AND visit_time = ?";
-    db.query(checkSql, [prisoner_code, visit_date, visit_time], (err, result) => {
+    const checkSql = "SELECT * FROM visits WHERE prisoner_id = ? AND visit_day = ? AND visit_time = ?";
+    db.query(checkSql, [prisoner_code, visit_day, visit_time], (err, result) => {
         if (err) {
             console.error("Check Error:", err);
             return res.status(500).send({ message: "เกิดข้อผิดพลาดในการตรวจสอบข้อมูล" });
