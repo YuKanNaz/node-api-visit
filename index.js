@@ -261,6 +261,18 @@ app.put("/puttext-officer", (req, res) => {
     });
 });
 
+
+app.get('/count-officer', (req, res) => {
+    db.query("SELECT COUNT(*) AS id FROM officer", (err, result) => {
+        if (err) {
+            console.error("Database Error:", err);
+            res.status(500).send({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
+        } else {
+            res.send(result[0]);
+        }
+    });
+});
+
 // 2. สำคัญมากสำหรับ Vercel: ต้อง Export app ออกไป
 module.exports = app;
 
