@@ -355,6 +355,61 @@ app.delete('/reset-system', (req, res) => {
         });
     });
 });
+//358
+
+
+
+
+
+
+app.get('/count-data', (req, res) => {
+    // Query 1: นับ Officer
+    db.query("SELECT COUNT(*) AS officer_total FROM officer", (err01, result01) => {
+        if (err01) {
+            console.error("Database Error 1:", err01);
+            return res.status(500).send({ message: "Error counting officers" });
+        }
+
+        // Query 2: นับ User
+        db.query("SELECT COUNT(*) AS user_total FROM user", (err02, result02) => {
+            if (err02) {
+                console.error("Database Error 2:", err02);
+                return res.status(500).send({ message: "Error counting users" });
+            }
+
+            // Query 3: นับ Admin
+            db.query("SELECT COUNT(*) AS admin_total FROM admin", (err03, result03) => {
+                if (err03) {
+                    console.error("Database Error 3:", err03);
+                    return res.status(500).send({ message: "Error counting admins" });
+                }
+
+                // --- จุดที่รวม Result ---
+                // สร้าง Object ใหม่ที่รวมค่าจากทั้ง 3 query
+                const combinedResult = {
+                    officer: result01[0].officer_total, // เอาค่าจาก result01
+                    user: result02[0].user_total,       // เอาค่าจาก result02
+                    admin: result03[0].admin_total      // เอาค่าจาก result03
+                };
+
+                // ส่งค่าที่รวมแล้วกลับไป
+                res.send(combinedResult);
+            });
+        });
+    });
+});
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // 2. สำคัญมากสำหรับ Vercel: ต้อง Export app ออกไป
