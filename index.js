@@ -47,6 +47,17 @@ app.get('/user', (req, res) => {
     });
 });
 
+app.get('/user-of-chack', (req, res) => {
+    const name = req.query.name;
+    db.query("SELECT * FROM user WHERE name LIKE ?", [`%${name}%`], (err, result) => {
+        if (err) {
+            console.error("Database Error:", err);
+            return res.status(500).send(err);
+        }
+        res.send(result);
+    });
+});
+
 app.get('/printdata', (req, res) => {
     db.query("SELECT * FROM visits", (err, result) => {
         if (err) {
@@ -76,6 +87,17 @@ app.get('/prisoner', (req, res) => {
             res.status(500).json(err);
         } else {
             res.json(result);
+        }
+    });
+});
+
+app.get('/officer', (req, res) => {
+    const name = req.query.name;//fronend
+    db.query("SELECT * FROM officer WHERE name LIKE ?", [`%${name}%`], (err, result) => {
+        if (err) {
+            res.status(500).send({ message: "getข้อมูลจาก/officerไม่ได้" });
+        } else {
+            res.send(result);
         }
     });
 });
@@ -261,17 +283,79 @@ app.put("/puttext-officer", (req, res) => {
     });
 });
 
+app.delete('/delete-user/:id', (req, res) => {
+    const  id  = req.params.id;
+    const sql = "DELETE FROM user WHERE id = ?";
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            res.status(500).send({ message: "ลบผู้ใช้ไม่สำเร็จ" });
+        }
+        else {
+            if (result.affectedRows === 0) {
+                res.status(404).send({ message: "ไม่พบผู้ใช้ที่ต้องการลบ" });
+            } else {
+                res.send({ message: "ลบผู้ใช้สำเร็จ" });
+            }
+        }
+    });
+});
 
-//app.get('/count-officer', (req, res) => {
-    //db.query("SELECT COUNT(*) AS id FROM officer", (err, result) => {
-        //if (err) {
-            //console.error("Database Error:", err);
-           // res.status(500).send({ message: "เกิดข้อผิดพลาดในการดึงข้อมูล" });
-       // } else {
-       //     res.send(result[0]);
-     //   }
- //   });
-//});
+app.delete('/delete-prisoner/:id', (req, res) => {
+    const  id_card_number  = req.params.id;
+    const sql = "DELETE FROM prisoner WHERE prisoner_id = ?";
+    db.query(sql, [id_card_number], (err, result) => {
+        if (err) {
+            res.status(500).send({ message: "ลบนักโทษไม่สำเร็จ" });
+        }
+        else {
+            if (result.affectedRows === 0) {
+                res.status(404).send({ message: "ไม่พบนักโทษที่ต้องการลบ" });
+            } else {
+                res.send({ message: "ลบนักโทษสำเร็จ" });
+            }
+        }
+    });
+});
+
+app.delete('/delete-officer/:id', (req, res) => {
+    const  id  = req.params.id;
+    const sql = "DELETE FROM officer WHERE id = ?";
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            res.status(500).send({ message: "ลบเจ้าหน้าที่ไม่สำเร็จ" });
+        }
+        else {
+            if (result.affectedRows === 0) {
+                res.status(404).send({ message: "ไม่พบเจ้าหน้าที่ที่ต้องการลบ" });
+            } else {
+                res.send({ message: "ลบเจ้าหน้าที่สำเร็จ" });
+            }
+        }
+    });
+});
+app.delete('/reset-system', (req, res) => {
+    const sqlTruncate = "TRUNCATE TABLE visits";
+    const sqlUpdateStatus = "UPDATE user SET booking_status = 'ยังไม่จอง'";
+
+    // รันคำสั่งแรก: ล้างข้อมูลการจอง
+    db.query(sqlTruncate, (err1, result1) => {
+        if (err1) {
+            console.error("Error Truncate:", err1);
+            return res.status(500).send({ message: "ล้างข้อมูลการจองไม่สำเร็จ", error: err1 });
+        }
+
+        // รันคำสั่งที่สอง: ปรับสถานะผู้ใช้ทุกคน
+        db.query(sqlUpdateStatus, (err2, result2) => {
+            if (err2) {
+                console.error("Error Update Status:", err2);
+                return res.status(500).send({ message: "รีเซ็ตสถานะผู้ใช้ไม่สำเร็จ", error: err2 });
+            }
+
+            res.send({ message: "รีเซ็ตระบบสำเร็จ! ล้างข้อมูลการจองและปรับสถานะทุกคนเป็น 'ยังไม่จอง' แล้ว" });
+        });
+    });
+});
+
 
 // 2. สำคัญมากสำหรับ Vercel: ต้อง Export app ออกไป
 module.exports = app;
