@@ -377,11 +377,11 @@ app.get('/count-data', (req, res) => {
                 return res.status(500).send({ message: "Error counting users" });
             }
 
-            // Query 3: นับ Admin
-            db.query("SELECT COUNT(*) AS admin_total FROM admin", (err03, result03) => {
+            // Query 3: นับ prisoner
+            db.query("SELECT COUNT(*) AS prisoner_id_total FROM prisoner", (err03, result03) => {
                 if (err03) {
                     console.error("Database Error 3:", err03);
-                    return res.status(500).send({ message: "Error counting admins" });
+                    return res.status(500).send({ message: "Error counting prisoner" });
                 }
 
                 // --- จุดที่รวม Result ---
@@ -389,7 +389,7 @@ app.get('/count-data', (req, res) => {
                 const combinedResult = {
                     officer: result01[0].officer_total, // เอาค่าจาก result01
                     user: result02[0].user_total,       // เอาค่าจาก result02
-                    admin: result03[0].admin_total      // เอาค่าจาก result03
+                    prisoner: result03[0].admin_total      // เอาค่าจาก result03
                 };
 
                 // ส่งค่าที่รวมแล้วกลับไป
