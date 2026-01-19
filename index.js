@@ -378,6 +378,7 @@ app.get('/count-data', (req, res) => {
             }
 
             // Query 3: นับ prisoner
+            // สังเกตตรงนี้คุณตั้งชื่อว่า prisoner_id_total
             db.query("SELECT COUNT(*) AS prisoner_id_total FROM prisoner", (err03, result03) => {
                 if (err03) {
                     console.error("Database Error 3:", err03);
@@ -385,14 +386,12 @@ app.get('/count-data', (req, res) => {
                 }
 
                 // --- จุดที่รวม Result ---
-                // สร้าง Object ใหม่ที่รวมค่าจากทั้ง 3 query
                 const combinedResult = {
-                    officer: result01[0].officer_total, // เอาค่าจาก result01
-                    user: result02[0].user_total,       // เอาค่าจาก result02
-                    prisoner: result03[0].admin_total      // เอาค่าจาก result03
+                    officer: result01[0].officer_total, 
+                    user: result02[0].user_total,       
+                    prisoner: result03[0].prisoner_id_total  
                 };
 
-                // ส่งค่าที่รวมแล้วกลับไป
                 res.send(combinedResult);
             });
         });
