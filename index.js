@@ -29,7 +29,7 @@ db.getConnection((err, connection) => {
 });
 
 
-app.get('https://khaoplong.quizchainat.com/user', (req, res) => {
+app.get('/user', (req, res) => {
     const name = req.query.name;
     db.query("SELECT * FROM user WHERE name = ?", [name], (err, result) => {
         if (err) {
@@ -40,7 +40,7 @@ app.get('https://khaoplong.quizchainat.com/user', (req, res) => {
     });
 });
 
-app.get('https://khaoplong.quizchainat.com/user-of-chack', (req, res) => {
+app.get('/user-of-chack', (req, res) => {
     const name = req.query.name;
     db.query("SELECT * FROM user WHERE name LIKE ?", [`%${name}%`], (err, result) => {
         if (err) {
@@ -51,7 +51,7 @@ app.get('https://khaoplong.quizchainat.com/user-of-chack', (req, res) => {
     });
 });
 
-app.get('https://khaoplong.quizchainat.com/printdata', (req, res) => {
+app.get('/printdata', (req, res) => {
     db.query("SELECT * FROM visits", (err, result) => {
         if (err) {
             res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
@@ -61,7 +61,7 @@ app.get('https://khaoplong.quizchainat.com/printdata', (req, res) => {
     });
 });
 
-app.get('https://khaoplong.quizchainat.com/notice', (req, res) => {
+app.get('/notice', (req, res) => {
     db.query("SELECT * FROM announce", (err, result) => {
         if (err) {
             res.status(500).send({ message: "เกิดข้อผิดพลาดที่ Server" });
@@ -71,7 +71,7 @@ app.get('https://khaoplong.quizchainat.com/notice', (req, res) => {
     });
 });
 
-app.get('https://khaoplong.quizchainat.com/prisoner', (req, res) => {
+app.get('/prisoner', (req, res) => {
     const name = req.query.name;
     // แก้ไข Syntax นิดหน่อยให้ปลอดภัยขึ้น
     db.query("SELECT * FROM prisoner WHERE name LIKE ?", [`%${name}%`], (err, result) => {
@@ -84,7 +84,7 @@ app.get('https://khaoplong.quizchainat.com/prisoner', (req, res) => {
     });
 });
 
-app.get('https://khaoplong.quizchainat.com/officer', (req, res) => {
+app.get('/officer', (req, res) => {
     const name = req.query.name;//fronend
     db.query("SELECT * FROM officer WHERE name LIKE ?", [`%${name}%`], (err, result) => {
         if (err) {
@@ -95,7 +95,7 @@ app.get('https://khaoplong.quizchainat.com/officer', (req, res) => {
     });
 });
 
-app.post('https://khaoplong.quizchainat.com/login', (req, res) => {
+app.post('/login', (req, res) => {
     const { name, birthday } = req.body;
     db.query(
         "SELECT * FROM user WHERE id_card_number = ? AND birthday = ?",
@@ -114,7 +114,7 @@ app.post('https://khaoplong.quizchainat.com/login', (req, res) => {
     );
 });
 
-app.post('https://khaoplong.quizchainat.com/putprisoner', (req, res) => {
+app.post('/putprisoner', (req, res) => {
     const { prisoner_code, name, age, cell_number, sentence_detail, added_by, birthdayP, id_card_numberP } = req.body;
     const sql = "INSERT INTO prisoner (prisoner_code, name, age, cell_number, sentence_detail, added_by, birthday, id_card_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     db.query(sql, [prisoner_code, name, age, cell_number, sentence_detail, added_by, birthdayP, id_card_numberP ], (err) => {
@@ -127,7 +127,7 @@ app.post('https://khaoplong.quizchainat.com/putprisoner', (req, res) => {
     });
 });
 
-app.post('https://khaoplong.quizchainat.com/login-officer', (req, res) => {
+app.post('/login-officer', (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT * FROM officer WHERE username = ? AND password = ?";
     db.query(sql, [username, password], (err, result) => {
@@ -144,7 +144,7 @@ app.post('https://khaoplong.quizchainat.com/login-officer', (req, res) => {
     })
 })
 
-app.post('https://khaoplong.quizchainat.com/login-admin', (req, res) => {
+app.post('/login-admin', (req, res) => {
     const { name, password } = req.body;
     db.query(
         "SELECT * FROM admin WHERE username = ? AND password = ? ",
@@ -164,7 +164,7 @@ app.post('https://khaoplong.quizchainat.com/login-admin', (req, res) => {
     )
 })
 
-app.put('https://khaoplong.quizchainat.com/update-prisoner-status', (req, res) => {
+app.put('/update-prisoner-status', (req, res) => {
     const { prisoner_id, status } = req.body;
     if (!prisoner_id) {
         return res.status(400).send({ message: "ไม่พบ prisoner_id ที่ส่งมา" });
@@ -181,7 +181,7 @@ app.put('https://khaoplong.quizchainat.com/update-prisoner-status', (req, res) =
     });
 });
 
-app.put('https://khaoplong.quizchainat.com/update-visit-status', (req, res) => {
+app.put('/update-visit-status', (req, res) => {
     const { visit_id, status } = req.body;
     if (!visit_id) {
         return res.status(400).send({ message: "ไม่พบ visit_id ที่ส่งมา" });
@@ -198,7 +198,7 @@ app.put('https://khaoplong.quizchainat.com/update-visit-status', (req, res) => {
     });
 });
 
-app.post('https://khaoplong.quizchainat.com/book-visit', (req, res) => {
+app.post('/book-visit', (req, res) => {
     const { prisoner_code, visitor_name, visit_date, visit_time, prisonerName, phone, relations, visit_day } = req.body;
     // 1. เพิ่มการตรวจสอบข้อมูลซ้ำในฐานข้อมูล
     const checkSql = "SELECT * FROM visits WHERE prisoner_id = ? AND visit_day = ? AND visit_time = ?";
@@ -229,7 +229,7 @@ app.post('https://khaoplong.quizchainat.com/book-visit', (req, res) => {
     });
 });
 
-app.post("https://khaoplong.quizchainat.com/register-user", (req, res) => {
+app.post("/register-user", (req, res) => {
     const { name, idCard, birthday, phone, email } = req.body;
     
     const sql = `
@@ -251,7 +251,7 @@ app.post("https://khaoplong.quizchainat.com/register-user", (req, res) => {
 });
 
 
-app.post("https://khaoplong.quizchainat.com/register-officer", (req, res) => {
+app.post("/register-officer", (req, res) => {
     const { nameof, username, password } = req.body;
     const sql = "INSERT INTO officer (name, username, password) VALUE (?, ?, ?)";
     db.query(sql, [nameof, username, password], (err) => {
@@ -264,7 +264,7 @@ app.post("https://khaoplong.quizchainat.com/register-officer", (req, res) => {
     });
 });
 
-app.put("https://khaoplong.quizchainat.com/puttext-officer", (req, res) => {
+app.put("/puttext-officer", (req, res) => {
     const { Notice, createby } = req.body;
     const sql = "UPDATE announce SET createby = ?, Notice = ? WHERE ID = 1;";
     db.query(sql, [createby, Notice], (err) => {
@@ -276,7 +276,7 @@ app.put("https://khaoplong.quizchainat.com/puttext-officer", (req, res) => {
     });
 });
 
-app.delete('https://khaoplong.quizchainat.com/delete-user/:id', (req, res) => {
+app.delete('/delete-user/:id', (req, res) => {
     const  id  = req.params.id;
     const sql = "DELETE FROM user WHERE id = ?";
     db.query(sql, [id], (err, result) => {
@@ -293,7 +293,7 @@ app.delete('https://khaoplong.quizchainat.com/delete-user/:id', (req, res) => {
     });
 });
 
-app.delete('https://khaoplong.quizchainat.com/delete-prisoner/:id', (req, res) => {
+app.delete('/delete-prisoner/:id', (req, res) => {
     const  id_card_number  = req.params.id;
     const sql = "DELETE FROM prisoner WHERE prisoner_id = ?";
     db.query(sql, [id_card_number], (err, result) => {
@@ -310,7 +310,7 @@ app.delete('https://khaoplong.quizchainat.com/delete-prisoner/:id', (req, res) =
     });
 });
 
-app.delete('https://khaoplong.quizchainat.com/delete-officer/:id', (req, res) => {
+app.delete('/delete-officer/:id', (req, res) => {
     const  id  = req.params.id;
     const sql = "DELETE FROM officer WHERE id = ?";
     db.query(sql, [id], (err, result) => {
@@ -326,7 +326,7 @@ app.delete('https://khaoplong.quizchainat.com/delete-officer/:id', (req, res) =>
         }
     });
 });
-app.delete('https://khaoplong.quizchainat.com/reset-system', (req, res) => {
+app.delete('/reset-system', (req, res) => {
     const sqlTruncate = "TRUNCATE TABLE visits";
     const sqlUpdateStatus = "UPDATE user SET booking_status = 'ยังไม่จอง'";
 
@@ -355,7 +355,7 @@ app.delete('https://khaoplong.quizchainat.com/reset-system', (req, res) => {
 
 
 
-app.get('https://khaoplong.quizchainat.com/count-data', (req, res) => {
+app.get('/count-data', (req, res) => {
     // Query 1: นับ Officer
     db.query("SELECT COUNT(*) AS officer_total FROM officer", (err01, result01) => {
         if (err01) {
